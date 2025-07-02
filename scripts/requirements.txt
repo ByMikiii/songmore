@@ -1,0 +1,5 @@
+pymongo
+yt-dlp
+pydub
+spotipy
+python-dotenv
