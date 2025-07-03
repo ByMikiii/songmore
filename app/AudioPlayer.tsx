@@ -1,25 +1,32 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-type StateType = {
-  time: number,
-  guess: string
-}
-
-type AudioPlayerProps = {
-  currentState: StateType;
-  genre: string;
+type Guess = {
+  song_name: string;
+  artist_name: string;
 };
 
-export default function AudioPlayer({ currentState, genre}: AudioPlayerProps) {
-  const audioRef = useRef<HTMLAudioElement>(null);
+type StateItem = {
+  time: number;
+  guess: Guess;
+};
 
+type AudioPlayerProps = {
+  currentState: StateItem;
+  genre: string;
+  rightGuess: boolean;
+};
+
+export default function AudioPlayer({ currentState, genre, rightGuess }: AudioPlayerProps) {
+  const audioRef = useRef<HTMLAudioElement>(null);
   useEffect(() => {
     const audio = audioRef.current;
     console.log(currentState.time)
     if (!audio) return;
     const handleAudioChange = () => {
-      if (audio.currentTime >= currentState.time) {
+      const time = rightGuess ? 300 : currentState.time;
+      console.log(time,"xdf")
+      if (audio.currentTime >= time) {
         audio.currentTime = 0;
         audio.pause();
       }
@@ -30,7 +37,19 @@ export default function AudioPlayer({ currentState, genre}: AudioPlayerProps) {
     return () => {
       audio.removeEventListener("timeupdate", handleAudioChange);
     };
-  }, [currentState.time]);
+  }, [currentState.time, rightGuess]);
+
+  useEffect(() => {
+    console.log("novy", rightGuess)
+    if(rightGuess){
+      audioRef.current?.play();
+    }
+  }, [rightGuess])
+
+  useEffect(() => {
+    audioRef.current?.load();
+  }, [genre])
+
 
 
   return(

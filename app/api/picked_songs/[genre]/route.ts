@@ -11,7 +11,6 @@ interface Params {
 export async function GET(request: Request, { params }: Params) {
   const now = Math.floor(Date.now() / 1000);
   const genre = (await params).genre
-  console.log(genre)
 
   const { connection } = await connectToDatabase();
 
@@ -23,7 +22,6 @@ export async function GET(request: Request, { params }: Params) {
       valid_to: { $gte: now.toString() },
     });
 
-  console.log('Raw songs:', rawSong);
 
   return NextResponse.json(rawSong || {});
 }

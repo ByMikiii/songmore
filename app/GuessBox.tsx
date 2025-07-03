@@ -1,11 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
+  type Guess = {
+    song_name: string;
+    artist_name: string;
+  };
+
+  type StateItem = {
+    time: number;
+    guess: Guess;
+  };
+
 type GuessBoxProps = {
   currentState: number;
   setCurrentState: React.Dispatch<React.SetStateAction<number>>;
+  states: StateItem[];
+  setStates: React.Dispatch<React.SetStateAction<StateItem[]>>;
+  rightGuess: boolean;
   setRightGuess: React.Dispatch<React.SetStateAction<boolean>>;
   genre: string;
+  handleGenreSave: (genre: string) => void;
 };
 
 type Song = {
@@ -14,11 +29,12 @@ type Song = {
   artist_name: string;
 }
 
-export default function GuessBox({ currentState, setCurrentState, setRightGuess, genre }: GuessBoxProps) {
+export default function GuessBox({ currentState, setCurrentState, states, setStates, rightGuess, setRightGuess, genre, handleGenreSave}: GuessBoxProps) {
 
   const [search, setSearch] = useState("");
-  const [list, setList] = useState<Song[]>([]);
-  const [searchList, setSearchList] = useState(list);
+  const [defaultList, setDefaultList] = useState<Song[]>([]);
+  const [list, setList] = useState<Song[]>(defaultList);
+  const [searchList, setSearchList] = useState<Song[]>(list);
 
   useEffect(() => {
     fetch("/api/songs").then(
@@ -32,12 +48,33 @@ export default function GuessBox({ currentState, setCurrentState, setRightGuess,
         (data as Song[]).forEach((song) => {
           tempList.push(song);
         });
+        setDefaultList(tempList);
         setList(tempList);
         setSearchList(tempList);
       }
     )
   }, [])
 
+
+useEffect(() => {
+  if (list.length === 0 || states.length === 0) return;
+
+  let updatedList = defaultList;
+  let updatedSearchList = defaultList;
+
+  for (let i = 0; i < currentState; i++) {
+    const guess = states[i].guess;
+    if (guess.song_name !== "") {
+      const result = removeFromLists(updatedList, updatedSearchList, guess.song_name, guess.artist_name);
+      updatedList = result.filteredList;
+      updatedSearchList = result.filteredSearchList;
+    }
+  }
+
+  setSearch("")
+  setList(updatedList);
+  setSearchList(updatedSearchList);
+}, [states, list.length, currentState]);
 
 
   useEffect(() => {
@@ -54,20 +91,38 @@ export default function GuessBox({ currentState, setCurrentState, setRightGuess,
     }
   }, [search])
 
+
+
+const removeFromLists = (
+  currentList: Song[],
+  currentSearchList: Song[],
+  songName: string,
+  artistName: string
+) => {
+  const filteredList = currentList.filter(
+    item => !(item.song_name === songName && item.artist_name === artistName)
+  );
+  const filteredSearchList = currentSearchList.filter(
+    item => !(item.song_name === songName && item.artist_name === artistName)
+  );
+
+  return { filteredList, filteredSearchList };
+};
+
   const handleSumbit = async (songName: string, artistName: string) => {
-    console.log(songName, artistName);
-    const filteredList = list.filter(
-      item => !(item.song_name === songName && item.artist_name === artistName)
-    );
-    setList(filteredList);
-    const filteredSearchList = searchList.filter(
-      item => !(item.song_name === songName && item.artist_name === artistName)
-    )
-    setSearchList(filteredSearchList);
+
+const { filteredList, filteredSearchList } = removeFromLists(
+  list,
+  searchList,
+  songName,
+  artistName
+);
+
+setList(filteredList);
+setSearchList(filteredSearchList);
 
     try{
-      console.log(`fetching current ${genre} song`)
-      const response = await fetch(`/api/picked_songs/${genre}`);
+      const response = await fetch(`/api/picked_songs/${genre.toLowerCase()}`);
       if (!response.ok) {
         throw new Error("Error while fetching songs.");
       }
@@ -78,22 +133,44 @@ export default function GuessBox({ currentState, setCurrentState, setRightGuess,
           artist_name: data.artist_name,
           genre: data.song_genre
       };
+      setStates(prev => {
+          const newStates = [...prev];
+          newStates[currentState] = {
+            ...newStates[currentState],
+            guess: {
+              song_name: songName,
+              artist_name: artistName
+            }
+          };
+          return newStates;
+        })
 
       if(correctSong.song_name === songName && correctSong.artist_name === artistName){
         console.log("correct!!")
         setRightGuess(true);
+        if(currentState !== 6){
+          setCurrentState(prev => prev + 1);
+        }
       }else{
         console.log("incorrect")
-        setCurrentState(prev => prev + 1);
+        if(currentState !== 6){
+          setCurrentState(prev => prev + 1);
+        }
       }
     }
     catch(e){
       console.error(e);
     }
-}
+  }
+
+
   const handleSkip = () => {
+    if(currentState === 6){
+      return;
+    }
     setCurrentState(prev => prev + 1);
   }
+
 
   return(
     <div className="dropdown bg-white w-72 mx-auto text-black">

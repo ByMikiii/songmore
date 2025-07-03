@@ -41,7 +41,7 @@ def get_song_by_genre(genre):
 
 
 def download_song_as_mp3(query):
-    if glob.glob("temp") != True:
+    if not os.path.exists("temp"):
         os.mkdir("temp")
     for filename in os.listdir("temp"):
         file_path = os.path.join("temp", filename)

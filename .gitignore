@@ -40,7 +40,7 @@ next-env.d.ts
 
 #scripts dir
 /scripts/temp/
-/scripts/.cache/
+/scripts/.cache
 
 #mp3s
 /public/pop/
