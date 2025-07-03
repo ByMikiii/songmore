@@ -239,5 +239,5 @@ def __main():
                         no_error = True
 
 
-# fill_db()
+fill_db()
 __main()

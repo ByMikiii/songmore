@@ -2,7 +2,7 @@
 A fun web application inspired by  [Songless](https://lessgames.com/songless), where players try to guess songs from short audio clips.
 
 ## Features
-You can simply choose a music genre and then guess the current song. There is a new song available for each genre every 1 hour. You also have to set playlist_id for each genre.
+You can simply choose a music genre and then guess the current song. There is a new song available for each genre every 1 hour. You can also set your own playlist id for each genre.
 
 ## Tech stack
 
@@ -17,8 +17,7 @@ You can simply choose a music genre and then guess the current song. There is a 
     - /scripts/.env
 3. Run the app
     ```bash
-    npm install
-    npm run dev
+    docker compose up --build
 
 ## Disclaimer
 This app was created purely for fun and educational purposes only. App also does not hold any license for the music.

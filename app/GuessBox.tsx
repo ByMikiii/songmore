@@ -122,6 +122,7 @@ setList(filteredList);
 setSearchList(filteredSearchList);
 
     try{
+      console.log(`fetching current ${genre} song`)
       const response = await fetch(`/api/picked_songs/${genre.toLowerCase()}`);
       if (!response.ok) {
         throw new Error("Error while fetching songs.");
@@ -133,6 +134,8 @@ setSearchList(filteredSearchList);
           artist_name: data.artist_name,
           genre: data.song_genre
       };
+      console.log("old", currentState, states)
+      console.log("correct- ", correctSong)
       setStates(prev => {
           const newStates = [...prev];
           newStates[currentState] = {
